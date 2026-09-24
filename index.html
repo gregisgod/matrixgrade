@@ -1,0 +1,341 @@
+html
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Grade - SQA Unified Master Engine</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: #0d1b2a; 
+            color: #e0e1dd; 
+            text-align: center; 
+            margin: 0; 
+            padding: 20px; 
+        }
+        .app-container { max-width: 600px; margin: 40px auto; padding: 20px; }
+        .quote-banner { 
+            color: #778da9; 
+            font-weight: 700; 
+            font-size: 16px; 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            margin-bottom: 30px; 
+            min-height: 24px; 
+        }
+        h1 { color: #f5ebe0; font-size: 32px; margin-bottom: 5px; }
+        .subtitle { color: #415a77; margin-bottom: 30px; font-size: 14px; }
+        .menu-group { display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px; }
+        select { 
+            background: #1b263b; 
+            color: #e0e1dd; 
+            border: 1px solid #415a77; 
+            padding: 14px; 
+            font-size: 16px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            width: 100%; 
+            outline: none; 
+        }
+        .card-container { 
+            background: #1b263b; 
+            min-height: 200px; 
+            border-radius: 16px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 20px; 
+            cursor: pointer; 
+            border: 1px solid #415a77; 
+            padding: 30px; 
+            margin: 20px 0; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            transition: transform 0.1s ease;
+        }
+        .card-container:active { transform: scale(0.99); }
+        .btn-group { display: flex; justify-content: space-between; gap: 20px; }
+        button { 
+            background: #415a77; 
+            color: #e0e1dd; 
+            border: none; 
+            padding: 14px 28px; 
+            font-size: 16px; 
+            font-weight: 600; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            flex: 1; 
+        }
+        button:hover { background: #778da9; }
+        .lockscreen { 
+            max-width: 440px; 
+            margin: 60px auto; 
+            padding: 40px 30px; 
+            background: #1b263b; 
+            border-radius: 16px; 
+            border: 1px solid #e63946; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+        }
+        .promo-box { margin-top: 30px; padding-top: 20px; border-top: 1px solid #415a77; display: flex; gap: 10px; }
+        .promo-box input { 
+            background: #0d1b2a; 
+            border: 1px solid #415a77; 
+            color: #e0e1dd; 
+            padding: 12px; 
+            border-radius: 8px; 
+            font-size: 14px; 
+            text-align: center; 
+            text-transform: uppercase; 
+            flex: 2; 
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container" id="mainApp">
+        <div class="quote-banner" id="quoteDisplay">HOLD THE LINE.</div>
+        <h1>Matrix Grade</h1>
+        <div class="subtitle">SQA Dynamic Revision Engine • By Matrix Keep</div>
+
+        <div class="menu-group">
+            <select id="levelSelect" onchange="loadSubjects()">
+                <option value="">-- Select SQA Level --</option>
+                <option value="nat4">National 4</option>
+                <option value="nat5">National 5</option>
+                <option value="higher">Higher</option>
+                <option value="advhigher">Advanced Higher</option>
+            </select>
+            <select id="subjectSelect" onchange="loadUnits()">
+                <option value="">-- Select Subject --</option>
+            </select>
+            <select id="unitSelect" onchange="startDeck()">
+                <option value="">-- Select Unit Section --</option>
+            </select>
+        </div>
+
+        <div class="card-container" id="flashcard" onclick="flipCard()">
+            Choose a tier and topic above to begin revising.
+        </div>
+
+        <div class="btn-group">
+            <button onclick="previousCard()">⬅️ Previous</button>
+            <button onclick="nextCard()">Next ➡️</button>
+        </div>
+    </div>
+
+    <script>
+        const quotes = [
+            "Never back down.", "Hold the line.", "Stand your ground.", "Keep moving forward.",
+            "Refuse to quit.", "Action drives success.", "Win the day.", "Stay the course.",
+            "Power through it.", "Focus on results.", "Silence the noise.", "Master your craft.",
+            "Make it happen.", "Own your future.", "Count the wins.", "Effort beats talent.",
+            "Chase the peak.", "Execute the plan.", "Ace the exam.", "Crush the SQA.",
+            "Unlock potential.", "Knowledge is power.", "You've got this.", "Finish the race.",
+            "Prove them wrong."
+        ];
+
+        const database = {
+            nat4: {
+                "PE": { "Factors": [{ q: "Name a fitness component in Nat 4 PE.", a: "Cardio-Respiratory Endurance (CRE) or Speed." }] },
+                "Music": { "Understanding Music": [{ q: "What is an ostinato?", a: "A short musical pattern repeated over and over." }] },
+                "Art": { "Expressive": [{ q: "What is primary source material?", a: "Artwork drawn directly from looking at a real object." }] },
+                "RE": { "Beliefs": [{ q: "What is the meaning of covenant?", a: "A solemn, sacred agreement between God and humanity." }] },
+                "English": { "Creation and Production": [{ q: "What is the purpose of a topic sentence?", a: "To introduce the main idea of a paragraph." }] },
+                "French": { "Society": [{ q: "Translate 'Ma famille':", a: "My family." }] },
+                "Spanish": { "Learning": [{ q: "Translate 'El colegio':", a: "High school / school." }] },
+                "History": { "Historical Study": [{ q: "What caused the castle building boom?", a: "The need for military defense and status." }] },
+                "Business": { "Business Frameworks": [{ q: "What is an entrepreneur?", a: "A person who takes a risk to set up a business." }] },
+                "Modern Studies": { "Democracy": [{ q: "Name one way citizens participate in democracy.", a: "Voting in an election." }] },
+                "Geography": { "Physical Environments": [{ q: "What causes a U-shaped valley?", a: "Glacial erosion carving out a V-shaped valley." }] },
+                "Maths": { "Expressions and Formulae": [{ q: "What is the area formula for a rectangle?", a: "Area = length x breadth." }] },
+                "Computing": { "Software Development": [{ q: "What is a variable?", a: "A named storage location in memory that holds data." }] },
+                "Physics": { "Dynamics": [{ q: "What is weight measured in?", a: "Newtons (N)." }] },
+                "Biology": { "Cell Biology": [{ q: "Where is DNA stored in an animal cell?", a: "The nucleus." }] },
+                "Chemistry": { "Chemical Changes": [{ q: "What speeds up a chemical reaction?", a: "Increasing temperature or adding a catalyst." }] },
+                "Practical Woodwork": { "Flat Frame": [{ q: "Name a common woodworking joint.", a: "Dowelling or Mortise and Tenon joint." }] },
+                "Practical Metalwork": { "Bench Skills": [{ q: "What tool is used to scratch lines on metal?", a: "A scriber." }] },
+                "Graphic Communication": [{ q: "What does CAD stand for?", a: "Computer Aided Design." }]
+            },
+            nat5: {
+                "PE": {
+                    "Physical Factor": [{ q: "Name two physical fitness sub-factors.", a: "Cardio-Respiratory Endurance (CRE) and Speed." }],
+                    "Mental Factor": [{ q: "Name two sub-factors of the mental factor.", a: "Concentration and Decision-Making." }],
+                    "Emotional Factor": [{ q: "Name four emotional sub-factors.", a: "Anger, Anxiety, Fear, and Confidence." }],
+                    "Social Factor": [{ q: "What is meant by the sub-factor 'Etiquette'?", a: "Showing respect for rules, officials, and opponents." }]
+                },
+                "Music": { "Concepts": [{ q: "What is an inversion?", a: "Turning a musical chord or melody upside down." }] },
+                "Art": { "Design Work": [{ q: "What is an ergonomic design?", a: "A design optimized for human comfort and efficiency." }] },
+                "RE": { "Morality": [{ q: "State one core Catholic social teaching principle.", a: "Human Dignity or Care for Creation." }] },
+                "English": { "RUAE": [{ q: "What should you look for when analyzing word choice?", a: "The connotations of specific verbs, nouns, or adjectives." }] },
+                "French": { "Contexts": [{ q: "Translate 'J'adore étudier l'informatique':", a: "I love studying computing science." }] },
+                "Spanish": { "Contexts": [{ q: "Translate 'Trabajo como programador':", a: "I work as a programmer." }] },
+                "History": { "Era Studies": [{ q: "When did WWI end?", a: "11th November 1918." }] },
+                "Business": { "Marketing": [{ q: "Name the 4 Ps of the Marketing Mix.", a: "Product, Price, Place, Promotion." }] },
+                "Modern Studies": { "Social Issues": [{ q: "Name a cause of wealth inequality.", a: "Unemployment or low pay industries." }] },
+                "Geography": { "Human": [{ q: "What is a shanty town?", a: "An unplanned settlement made of scrap materials." }] },
+                "Maths": { "Applications": [{ q: "State Pythagoras' Theorem formula.", a: "a² + b² = c²" }] },
+                "Computing": { "Database": [{ q: "What does SQL stand for?", a: "Structured Query Language." }] },
+                "Physics": {
+
+"Dynamics & Space": [{ q: "Define a scalar quantity.", a: "A quantity with magnitude (size) only." }],
+"Electricity": [{ q: "State Ohm's Law formula.", a: "V = IR (Voltage = Current x Resistance)." }]
+},
+"Biology": { "Cellular": [{ q: "What is the function of the cell membrane?", a: "Controls entry and exit of substances." }] },
+"Chemistry": { "Atomic Structure": [{ q: "What charge does an electron have?", a: "Negative charge (-1)." }] },
+"Practical Woodwork": { "Carcase": [{ q: "What tool checks if a corner is exactly 90 degrees?", a: "A try-square." }] },
+"Practical Metalwork": { "Machines": [{ q: "What safety gear must be worn at the pillar drill?", a: "Safety goggles." }] },
+"Graphic Communication": { "3D Modeling": [{ q: "What CAD command forms a 3D block from a 2D shape?", a: "Extrude." }] }
+},
+higher: {
+"PE": { "Cycle of Analysis": [{ q: "What is step 1 in the cycle?", a: "Gathering objective data on performance." }] },
+"Music": { "Analysis": [{ q: "What is a passacaglia?", a: "Variations over a ground bass." }] },
+"Art": { "Critical": [{ q: "What does composition mean in art?", a: "The layout and arrangement of elements in a piece." }] },
+"RE": { "Theology": [{ q: "Define transubstantiation.", a: "The bread and wine becoming the actual Body and Blood of Christ." }] },
+"English": { "Critical Essay": [{ q: "What does a thesis statement do?", a: "Outlines the main argument of the essay." }] },
+"French": { "Essay": [{ q: "Translate 'À mon avis':", a: "In my opinion." }] },
+"Spanish": { "Writing": [{ q: "Translate 'Desde mi punto de vista':", a: "From my point of view." }] },
+"Italian": { "Grammar": [{ q: "Translate 'Penso che sia importante':", a: "I think it is important." }] },
+"History": { "Source Analysis": [{ q: "What does provenance evaluate?", a: "Who wrote it, when, and why they wrote it." }] },
+"Business": { "Management": [{ q: "Name a benefit of corporate social responsibility.", a: "Enhanced brand reputation." }] },
+"Modern Studies": { "World Powers": [{ q: "Name the head of state of the USA.", a: "The President." }] },
+"Geography": { "Global Issues": [{ q: "What drives climate change patterns?", a: "Greenhouse gas emissions trap solar radiation." }] },
+"Maths": { "Calculus": [{ q: "What does integrating a function find?", a: "The total area underneath the curve." }] },
+"Computing": { "Web Tech": [{ q: "What does CSS stand for?", a: "Cascading Style Sheets." }] },
+"Physics": { "Particles": [{ q: "Name the elementary particle that binds quarks.", a: "Gluon." }] },
+"Biology": { "Genetics": [{ q: "What is an exon?", a: "A coding region of a gene sequence." }] },
+"Chemistry": { "Equilibrium": [{ q: "What states Le Chatelier's principle?", a: "A system shifts to counteract any external balance change." }] },
+"Practical Woodwork": { "Joints": [{ q: "What saw makes fine detailed cuts in joints?", a: "A dovetail saw." }] },
+"Practical Metalwork": { "Fabrication": [{ q: "What process permanently bonds metal with heat?", a: "Welding." }] },
+"Graphic Communication": { "Standards": [{ q: "What color choice represents a warning standard?", a: "Yellow." }] }
+},
+advhigher: {
+"PE": { "Research": [{ q: "What ensures source validity?", a: "Author credentials and current academic backing." }] },
+"Music": { "Advanced Concepts": [{ q: "What is bitonality?", a: "The simultaneous use of two different keys." }] },
+"Art": { "Portfolio Analysis": [{ q: "What defines context in an investigation?", a: "The historical and cultural influences surrounding the piece." }] },
+"RE": { "Ethics": [{ q: "What is utilitarianism?", a: "An ethical theory prioritizing the greatest good for the greatest number." }] },
+"English": { "Dissertation": [{ q: "What makes a strong dissertation scope?", a: "A narrow, deeply focused comparative text framework." }] },
+"French": { "Literature": [{ q: "What is a stylistic feature analysis?", a: "Examining how an author uses metaphor and tone." }] },
+"Spanish": { "Translation": [{ q: "Translate 'No obstante':", a: "However / Nevertheless." }] },
+"Italian": { "Advanced Syntax": [{ q: "Translate 'Qualora fosse necessario':", a: "Should it be necessary." }] },
+"History": { "Historiography": [{ q: "What is historiography?", a: "The study of how historical interpretations change over time." }] },
+"Business": { "Strategic Decision": [{ q: "What is a PESTEC analysis used for?", a: "Evaluating external operating macro environments." }] },
+"Modern Studies": { "Research Methods": [{ q: "What limits structured interview data?", a: "Interviewer bias and rigid question frameworks." }] },
+"Geography": { "Independent Study": [{ q: "What is a transect line?", a: "A straight path across a landscape used to count observations." }] },
+"Maths": { "Matrix Algebra": [{ q: "What is a singular matrix?", a: "A square matrix whose determinant equals zero." }] },
+"Computing": { "Algorithms": [{ q: "What is the time complexity of a binary search?", a: "O(log n)." }] },
+"Physics": { "Quantum Theory": [{ q: "State the Heisenberg Uncertainty Principle.", a: "Position and momentum cannot be simultaneously measured precisely." }] },
+"Biology": { "Investigative": [{ q: "What is a negative control group?", a: "A group where no treatment effect is expected." }] },
+"Chemistry": { "Spectroscopy": [{ q: "What does NMR spectroscopy determine?", a: "The physical structure of organic compounds." }] },
+"Practical Woodwork": { "Machining": [{ q: "What is critical for router safety?", a: "Ensuring secure clamp lockdown and correct bit feed rotation direction." }] },
+"Practical Metalwork": { "Precision Lathe": [{ q: "What checks metal diameter precision?", a: "A micrometer." }] },
+"Graphic Communication": { "Production": [{ q: "What does rendering calculate?", a: "Light paths, texture shadows, and reflections." }] }
+}
+};
+let currentCards = [];
+let currentIndex = 0;
+let showingQuestion = true;
+function loadSubjects() {
+const lvl = document.getElementById("levelSelect").value;
+const subDropdown = document.getElementById("subjectSelect");
+subDropdown.innerHTML = '-- Select Subject --';
+document.getElementById("unitSelect").innerHTML = '-- Select Unit Section --';
+if (lvl && database[lvl]) {
+Object.keys(database[lvl]).forEach(sub => {
+subDropdown.innerHTML += <option value="${sub}">${sub}</option>;
+});
+}
+}
+function loadUnits() {
+const lvl = document.getElementById("levelSelect").value;
+const sub = document.getElementById("subjectSelect").value;
+const unitDropdown = document.getElementById("unitSelect");
+unitDropdown.innerHTML = '-- Select Unit Section --';
+if (lvl && sub && database[lvl][sub]) {
+if (Array.isArray(database[lvl][sub])) {
+unitDropdown.innerHTML += <option value="all">Core Syllabus</option>;
+} else {
+Object.keys(database[lvl][sub]).forEach(unit => {
+unitDropdown.innerHTML += <option value="${unit}">${unit}</option>;
+});
+}
+}
+}
+function startDeck() {
+const lvl = document.getElementById("levelSelect").value;
+const sub = document.getElementById("subjectSelect").value;
+const unit = document.getElementById("unitSelect").value;
+if (lvl && sub && unit) {
+if (unit === "all") {
+currentCards = database[lvl][sub];
+} else {
+currentCards = database[lvl][sub][unit];
+}
+currentIndex = 0;
+showingQuestion = true;
+updateCardDisplay();
+}
+}
+function updateCardDisplay() {
+const card = document.getElementById("flashcard");
+if (!currentCards || currentCards.length === 0) {
+card.innerText = "This unit slot is prepped for database expansion.";
+return;
+}
+if (showingQuestion) {
+card.innerText = currentCards[currentIndex].q;
+card.style.color = "#e0e1dd";
+} else {
+card.innerText = currentCards[currentIndex].a;
+card.style.color = "#778da9";
+}
+}
+function flipCard() {
+if (!currentCards || currentCards.length === 0) return;
+showingQuestion = !showingQuestion;
+updateCardDisplay();
+const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+document.getElementById("quoteDisplay").innerText = randomQuote;
+}
+function nextCard() {
+if (!currentCards || currentCards.length === 0) return;
+currentIndex = (currentIndex + 1) % currentCards.length;
+showingQuestion = true;
+updateCardDisplay();
+}
+function previousCard() {
+if (!currentCards || currentCards.length === 0) return;
+currentIndex = (currentIndex - 1 + currentCards.length) % currentCards.length;
+showingQuestion = true;
+updateCardDisplay();
+}
+function handleTrialEngine() {
+const trialDuration = 7 * 24 * 60 * 60 * 1000;
+let trialStart = localStorage.getItem("mm_trialStart");
+let premiumActive = localStorage.getItem("mm_premiumActive");
+if (premiumActive === "true") return;
+if (!trialStart) {
+trialStart = new Date().getTime();
+localStorage.setItem("mm_trialStart", trialStart);
+}
+const now = new Date().getTime();
+if (now - trialStart > trialDuration) {
+document.getElementById("mainApp").innerHTML = <div class="lockscreen"> <h2>🔒 Matrix Grade Account Status</h2> <p style="color: #778da9;">Your 7-day complimentary school trial has completed. Keep mastering your SQA goals.</p> <h3 style="color: #e0e1dd; font-size: 36px; margin: 20px 0;">£1 / month</h3> <p style="font-size: 13px; color: #778da9;">Access instant setup via Apple Pay. Cancel at any time.</p> <button onclick="simulatePayment()" style="width: 100%; padding: 14px; font-size: 18px; border-radius: 8px; margin-top: 10px;">  Pay £1 Monthly Subscription </button> <div class="promo-box"> <input type="text" id="promoIn" placeholder="Enter Teacher Code"> <button onclick="verifyCode()" style="background: #415a77; padding: 10px 15px; font-size: 14px;">Apply</button> </div> </div>;
+}
+}
+function simulatePayment() {
+alert("Redirecting to secure Stripe Apple Pay Gateway...");
+localStorage.setItem("mm_premiumActive", "true");
+location.reload();
+}
+function verifyCode() {
+const code = document.getElementById("promoIn").value.toUpperCase();
+if (code === "YOUCANDOIT") {
+alert("Promo Code Verified! Miss Gear's extra week has been added to your profile.");
+localStorage.setItem("mm_trialStart", new Date().getTime());
+location.reload();
+} else {
+alert("Invalid school coupon code. Please try again.");
+}
+}
+handleTrialEngine();
